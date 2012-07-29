@@ -12,4 +12,10 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require handlebars
+//= require ember-latest
+//= require ember-data-latest
+//= require_self
+//= require app
+App = Em.Application.create();
 //= require_tree .
