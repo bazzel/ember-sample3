@@ -1,0 +1,17 @@
+<table class='table table-striped table-bordered'>
+  <tr>
+    <th>Title</th>
+    <th>Body</th>
+    <th>Published</th>
+    <th></th>
+  </tr>
+
+  {{#each post in controller}}
+    <td><a {{action showPost post href=true}}>{{post.title}}</a></td>
+    <td {{bindAttr title="post.body"}} rel="tooltip">{{post.intro}}</td>
+    <td>{{post.published}}</td>
+    <td>{{post.comments.length}}</td>
+    <td>{{post.trackbacks.length}}</td>
+    <td><a {{action editPost post href=true}}>Edit</a></td>
+  {{/each}}
+</table>

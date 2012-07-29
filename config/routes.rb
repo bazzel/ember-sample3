@@ -1,4 +1,6 @@
 SinglePage::Application.routes.draw do
+  resources :posts
+
   root :to => 'assets#index'
 
   get "assets/index"
