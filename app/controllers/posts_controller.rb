@@ -8,14 +8,10 @@ class PostsController < ApplicationController
 #
 #   # GET /posts/1
 #   # GET /posts/1.json
-#   def show
-#     @post = Post.find(params[:id])
-#
-#     respond_to do |format|
-#       format.html # show.html.erb
-#       format.json { render json: @post }
-#     end
-#   end
+  def show
+    puts "*"*100
+    respond_with Post.find(params[:id])
+  end
 #
 #   # GET /posts/new
 #   # GET /posts/new.json
