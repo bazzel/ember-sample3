@@ -1,4 +1,10 @@
-<h1>Post</h1>
+{{#if isLoaded}}
+  <h2>{{title}}</h2>
+  <p>{{body}}</p>
+  <p><b>Published:</b>{{published}}</p>
+{{else}}
+  <p>Loading</p>
+{{/if}}
 
-<p>{{title}}</p>
-
+</p>
+{{outlet}}
