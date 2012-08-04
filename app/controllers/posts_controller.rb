@@ -5,12 +5,14 @@ class PostsController < ApplicationController
     respond_with Post.all
   end
 
-#
-#   # GET /posts/1
-#   # GET /posts/1.json
   def show
-    puts "*"*100
     respond_with Post.find(params[:id])
+  end
+
+  def update
+    @post = Post.find(params[:id])
+    @post.update_attributes(params[:post])
+    respond_with @post
   end
 #
 #   # GET /posts/new
