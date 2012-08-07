@@ -3,7 +3,10 @@
     <ul class="nav nav-tabs nav-stacked" id='posts'>
       {{#each post in controller}}
         <tr>
-          <li><a {{action showPost post href=true}}>{{post.title}}</a></li>
+          <li>
+          <a {{action showPost post href=true}}>{{post.title}}</a>
+          {{view App.DeletePostView contentBinding="post"}}
+          </li>
         </tr>
       {{/each}}
     </ul>
