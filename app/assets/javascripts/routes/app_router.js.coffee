@@ -43,3 +43,9 @@ App.Router = Em.Router.extend
     save: (router, event) ->
       router.get('postsController.transaction').commit()
       router.transitionTo('show')
+    delete: (router, event) ->
+      post = event.context
+      if confirm("Are you sure you want to delete the post with title '#{post.get('title')}'?")
+        post.deleteRecord()
+        post.store.commit()
+        App.router.transitionTo 'posts.index'
