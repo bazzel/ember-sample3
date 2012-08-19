@@ -25,7 +25,10 @@
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">Save</button>
-      <a {{action cancel}} class="btn">Cancel</a>
+      {{#unless isNew}}
+        <button {{action delete content}} class="btn btn-danger">Delete</button>
+      {{/unless}}
+      <a {{action cancel content}} class="btn">Cancel</a>
     </div>
   </fieldset>
 </form>

@@ -51,7 +51,7 @@ App.Router = Em.Router.extend
 
         postsController.set('transaction', transaction)
         postsController.connectOutlet
-          viewClass: App.NewPostView
+          viewClass: App.EditPostView
           controller: router.get('postController')
           context: post
       # EVENTS

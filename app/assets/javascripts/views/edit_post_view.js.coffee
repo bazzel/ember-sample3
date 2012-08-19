@@ -1,2 +1,2 @@
 App.EditPostView = Em.View.extend
-  templateName: 'edit_post'
+  templateName: 'form'
