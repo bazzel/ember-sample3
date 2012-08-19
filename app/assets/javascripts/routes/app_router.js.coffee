@@ -10,6 +10,7 @@ App.Router = Em.Router.extend
     route: '/posts'
     showPost: Em.Route.transitionTo 'posts.show'
     editPost: Em.Route.transitionTo 'posts.edit'
+    createPost: Em.Route.transitionTo 'create'
     index: Em.Route.extend
       route: '/'
       connectOutlets: (router) ->
@@ -37,12 +38,35 @@ App.Router = Em.Router.extend
         router.get('postsController.transaction').rollback()
         @_super(router, path)
       # STATES
-    cancel: (router, event) ->
-      router.get('postsController.transaction').rollback()
-      router.transitionTo('show')
+      cancel: (router, event) ->
+        post = event.context
+        router.get('postsController.transaction').rollback()
+        router.transitionTo('show', post)
+    create: Em.Route.extend
+      route: '/new'
+      connectOutlets: (router) ->
+        transaction = router.get('store').transaction()
+        post = transaction.createRecord(App.Post)
+        postsController = router.get('postsController')
+
+        postsController.set('transaction', transaction)
+        postsController.connectOutlet
+          viewClass: App.NewPostView
+          controller: router.get('postController')
+          context: post
+      # EVENTS
+      unroutePath: (router, path) ->
+        router.get('postsController.transaction').rollback()
+        @_super(router, path)
+      # STATES
+      cancel: (router, event) ->
+        router.get('postsController.transaction').rollback()
+        router.transitionTo('index')
+
     save: (router, event) ->
+      post = event.context
       router.get('postsController.transaction').commit()
-      router.transitionTo('show')
+      router.transitionTo('show', post)
     delete: (router, event) ->
       post = event.context
       if confirm("Are you sure you want to delete the post with title '#{post.get('title')}'?")

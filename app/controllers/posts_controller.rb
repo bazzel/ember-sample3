@@ -9,6 +9,10 @@ class PostsController < ApplicationController
     respond_with Post.find(params[:id])
   end
 
+  def create
+    respond_with Post.create(params[:post])
+  end
+
   def update
     @post = Post.find(params[:id])
     @post.update_attributes(params[:post])
