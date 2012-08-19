@@ -1,11 +1,11 @@
 <div class="row-fluid">
   <div class="span6">
     <ul class="nav nav-tabs nav-stacked" id='posts'>
-      {{#each post in controller}}
+      {{#each content}}
         <tr>
           <li>
-          <a {{action showPost post href=true}}>{{post.title}}</a>
-          <a {{action delete post}}>Delete</a>
+          <a {{action showPost this href=true}}>{{title}}</a>
+          <a {{action delete this}}>Delete</a>
           </li>
         </tr>
       {{/each}}
