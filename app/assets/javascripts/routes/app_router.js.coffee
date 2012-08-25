@@ -1,6 +1,6 @@
 App.Router = Em.Router.extend
   enableLogging: true
-  location: 'hash'
+  location: 'history'
   root: Em.Route.extend
     index: Em.Route.extend
       route: '/'
