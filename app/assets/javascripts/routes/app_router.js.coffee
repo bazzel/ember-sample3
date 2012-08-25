@@ -24,52 +24,46 @@ App.Router = Em.Router.extend
       # SETUP
       route: '/:post_id/edit'
       connectOutlets: (router, post) ->
-        transaction = router.get('store').transaction()
-        transaction.add post
         postsController = router.get('postsController')
-
-        postsController.set('transaction', transaction)
         postsController.connectOutlet
           viewClass: App.EditPostView
           controller: router.get('postController')
           context: post
       # EVENTS
       unroutePath: (router, path) ->
-        router.get('postsController.transaction').rollback()
+        router.get('postController.transaction').rollback()
         @_super(router, path)
       # STATES
       cancel: (router, event) ->
         post = event.context
-        router.get('postsController.transaction').rollback()
+        router.get('postController.transaction').rollback()
         router.transitionTo('show', post)
     create: Em.Route.extend
       route: '/new'
       connectOutlets: (router) ->
-        transaction = router.get('store').transaction()
-        post = transaction.createRecord(App.Post)
+        post = App.Post.createRecord()
         postsController = router.get('postsController')
 
-        postsController.set('transaction', transaction)
         postsController.connectOutlet
           viewClass: App.EditPostView
           controller: router.get('postController')
           context: post
       # EVENTS
       unroutePath: (router, path) ->
-        router.get('postsController.transaction').rollback()
+        router.get('postController.transaction').rollback()
         @_super(router, path)
       # STATES
       cancel: (router, event) ->
-        router.get('postsController.transaction').rollback()
+        router.get('postController.transaction').rollback()
         router.transitionTo('index')
 
     save: (router, event) ->
       post = event.context
-      router.get('postsController.transaction').commit()
+      post.transaction.commit()
       router.transitionTo('show', post)
     delete: (router, event) ->
       post = event.context
       if confirm("Are you sure you want to delete the post with title '#{post.get('title')}'?")
         post.deleteRecord()
-        post.store.commit()
+        post.transaction.commit()
         App.router.transitionTo 'posts.index'

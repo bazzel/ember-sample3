@@ -1,7 +1,2 @@
 Known issues
 
-Select a post
-Click Edit
-Select the post again
-Click Edit
->> assertion failed: Models cannot belong to more than one transaction at a time.
