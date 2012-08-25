@@ -1,9 +1,12 @@
-{{#if isLoaded}}
-  <h2>{{title}}</h2>
-  <p>{{body}}</p>
-  <p><b>Published:</b>{{published}}</p>
-{{else}}
-  <p>Loading</p>
-{{/if}}
+<div class="panel">
+  {{#if isLoaded}}
+    <h4>{{title}}</h4>
+    <p>{{body}}</p>
+    <p><b>Published:</b>{{published}}</p>
+  {{else}}
+    <p>Loading</p>
+  {{/if}}
 
-<a {{action editPost content href=true}}>Edit</a> | <a {{action delete content}}>Delete</a>
+  <a {{action editPost content href=true}} class='secondary button'>Edit</a>
+  <a {{action delete content}} class="alert button">Delete</a>
+</div>

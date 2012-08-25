@@ -1,18 +1,14 @@
-<div class="row-fluid">
-  <div class="span6">
-    <a {{action createPost href=true}}>New Post</a>
-    <ul class="nav nav-tabs nav-stacked" id='posts'>
-      {{#each content}}
-        <tr>
-          <li>
-          <a {{action showPost this href=true}}>{{title}}</a>
-          <a {{action delete this}}>Delete</a>
-          </li>
-        </tr>
-      {{/each}}
-    </ul>
-  </div>
-  <div class="span6">
-    {{outlet}}
-  </div>
+<div class='six columns'>
+  <a {{action createPost href=true}} class='button'>New Post</a>
+  <ul class='posts'>
+    {{#each content}}
+      <li>
+        <a {{action showPost this href=true}}>{{title}}</a>
+        <a {{action delete this}} class="delete-post">Delete</a>
+      </li>
+    {{/each}}
+  </ul>
+</div>
+<div class="six columns">
+  {{outlet}}
 </div>

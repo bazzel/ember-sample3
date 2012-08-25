@@ -1,35 +1,18 @@
-<form {{action save content on="submit"}} class="form-horizontal">
-  <fieldset>
-    <div class="control-group">
-      <label for="post_title" class="control-label">Title</label>
-      <div class="controls">
-        {{view Em.TextField valueBinding="title" id="post_title" class="input-xlarge"}}
-      </div>
-    </div>
+<form {{action save content on="submit"}}>
+  <label for="post_title" class="control-label">Title</label>
+  {{view Em.TextField valueBinding="title" id="post_title" placeholder="Title"}}
 
-    <div class="control-group">
-      <label for="post_body" class="control-label">Body</label>
-      <div class="controls">
-        {{view Em.TextArea valueBinding="body" id="post_body" class="input-xlarge"}}
-      </div>
-    </div>
+  <label for="post_body" class="control-label">Body</label>
+  {{view Em.TextArea valueBinding="body" id="post_body" class="Body"}}
 
-    <div class="control-group">
-      <div class="controls">
-        <label class="checkbox">
-          {{view Ember.Checkbox checkedBinding="published"}}
-          Published
-        </label>
-      </div>
-    </div>
+  <label>
+    {{view Ember.Checkbox checkedBinding="published"}} Published
+  </label>
 
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Save</button>
-      {{#unless isNew}}
-        <button {{action delete content}} class="btn btn-danger">Delete</button>
-      {{/unless}}
-      <a {{action cancel content}} class="btn">Cancel</a>
-    </div>
-  </fieldset>
+  <button type="submit" class="button">Save</button>
+  {{#unless isNew}}
+    <button {{action delete content}} class="alert button">Delete</button>
+  {{/unless}}
+  <a {{action cancel content}} class="secondary button">Cancel</a>
 </form>
 
