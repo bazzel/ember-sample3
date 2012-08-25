@@ -142,8 +142,8 @@ window.ember_deprecateFunc  = Ember.deprecateFunc("ember_deprecateFunc is deprec
 
 })();
 
-// Version: v1.0.pre-53-g9713824
-// Last commit: 9713824 (2012-08-17 12:19:14 -0700)
+// Version: v1.0.pre-68-ge60e818
+// Last commit: e60e818 (2012-08-24 14:59:34 -0700)
 
 
 (function() {
@@ -4995,6 +4995,24 @@ Alias = function(methodName) {
 };
 Alias.prototype = new Ember.Descriptor();
 
+/**
+  Makes a property or method available via an additional name.
+
+      App.PaintSample = Ember.Object.extend({
+        color: 'red',
+        colour: Ember.alias('color'),
+        name: function(){
+          return "Zed";
+        },
+        moniker: Ember.alias("name")
+      });
+      var paintSample = App.PaintSample.create()
+      paintSample.get('colour'); //=> 'red'
+      paintSample.moniker(); //=> 'Zed'
+
+  @param {String} methodName name of the method or property to alias
+  @returns {Ember.Descriptor}
+*/
 Ember.alias = function(methodName) {
   return new Alias(methodName);
 };
@@ -8272,17 +8290,23 @@ Ember.Evented = Ember.Mixin.create(
 // Ember.Object.  We only define this separately so that Ember.Set can depend on it
 
 
-
-var classToString = Ember.Mixin.prototype.toString;
-var set = Ember.set, get = Ember.get;
-var o_create = Ember.create,
+var set = Ember.set, get = Ember.get,
+    o_create = Ember.create,
     o_defineProperty = Ember.platform.defineProperty,
     a_slice = Array.prototype.slice,
+    GUID_KEY = Ember.GUID_KEY,
+    guidFor = Ember.guidFor,
+    generateGuid = Ember.generateGuid,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
     finishChains = Ember.finishChains,
-    finishPartial = Ember.Mixin.finishPartial,
-    reopen = Ember.Mixin.prototype.reopen;
+    destroy = Ember.destroy,
+    schedule = Ember.run.schedule,
+    Mixin = Ember.Mixin,
+    applyMixin = Mixin._apply,
+    finishPartial = Mixin.finishPartial,
+    reopen = Mixin.prototype.reopen,
+    classToString = Mixin.prototype.toString;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -8304,14 +8328,14 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
-    var m = Ember.meta(this);
+    o_defineProperty(this, GUID_KEY, undefinedDescriptor);
+    o_defineProperty(this, '_super', undefinedDescriptor);
+    var m = meta(this);
     m.proto = this;
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
     }
-    o_defineProperty(this, Ember.GUID_KEY, undefinedDescriptor);
-    o_defineProperty(this, '_super', undefinedDescriptor);
     finishPartial(this, m);
     delete m.proto;
     finishChains(this);
@@ -8321,7 +8345,7 @@ function makeCtor() {
   Class.toString = classToString;
   Class.willReopen = function() {
     if (wasApplied) {
-      Class.PrototypeMixin = Ember.Mixin.create(Class.PrototypeMixin);
+      Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
     }
 
     wasApplied = false;
@@ -8347,11 +8371,11 @@ function makeCtor() {
 
 var CoreObject = makeCtor();
 
-CoreObject.PrototypeMixin = Ember.Mixin.create(
+CoreObject.PrototypeMixin = Mixin.create(
 /** @scope Ember.CoreObject.prototype */ {
 
   reopen: function() {
-    Ember.Mixin._apply(this, arguments, true);
+    applyMixin(this, arguments, true);
     return this;
   },
 
@@ -8386,7 +8410,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
     if (this.willDestroy) { this.willDestroy(); }
 
     set(this, 'isDestroyed', true);
-    Ember.run.schedule('destroy', this, this._scheduledDestroy);
+    schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
 
@@ -8397,7 +8421,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
     @private
   */
   _scheduledDestroy: function() {
-    Ember.destroy(this);
+    destroy(this);
     if (this.didDestroy) { this.didDestroy(); }
   },
 
@@ -8408,7 +8432,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
   },
 
   toString: function() {
-    return '<'+this.constructor.toString()+':'+Ember.guidFor(this)+'>';
+    return '<'+this.constructor.toString()+':'+guidFor(this)+'>';
   }
 });
 
@@ -8418,7 +8442,7 @@ if (Ember.config.overridePrototypeMixin) {
 
 CoreObject.__super__ = null;
 
-var ClassMixin = Ember.Mixin.create(
+var ClassMixin = Mixin.create(
 /** @scope Ember.ClassMixin.prototype */ {
 
   ClassMixin: Ember.required(),
@@ -8431,8 +8455,8 @@ var ClassMixin = Ember.Mixin.create(
 
   extend: function() {
     var Class = makeCtor(), proto;
-    Class.ClassMixin = Ember.Mixin.create(this.ClassMixin);
-    Class.PrototypeMixin = Ember.Mixin.create(this.PrototypeMixin);
+    Class.ClassMixin = Mixin.create(this.ClassMixin);
+    Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
 
     Class.ClassMixin.ownerConstructor = Class;
     Class.PrototypeMixin.ownerConstructor = Class;
@@ -8444,7 +8468,7 @@ var ClassMixin = Ember.Mixin.create(
 
     proto = Class.prototype = o_create(this.prototype);
     proto.constructor = Class;
-    Ember.generateGuid(proto, 'ember');
+    generateGuid(proto, 'ember');
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);
@@ -8465,7 +8489,7 @@ var ClassMixin = Ember.Mixin.create(
 
   reopenClass: function() {
     reopen.apply(this.ClassMixin, arguments);
-    Ember.Mixin._apply(this, arguments, false);
+    applyMixin(this, arguments, false);
     return this;
   },
 
@@ -11570,11 +11594,11 @@ var invokeForState = {
   and a different class name if it evaluates to false, you can pass a binding
   like this:
 
-    // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
-    Ember.View.create({
-      classNameBindings: ['isEnabled:enabled:disabled']
-      isEnabled: true
-    });
+      // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
+      Ember.View.create({
+        classNameBindings: ['isEnabled:enabled:disabled']
+        isEnabled: true
+      });
 
   Will result in view instances with an HTML representation of:
 
@@ -11586,21 +11610,20 @@ var invokeForState = {
 
   This syntax offers the convenience to add a class if a property is `false`:
 
-    // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
-    Ember.View.create({
-      classNameBindings: ['isEnabled::disabled']
-      isEnabled: true
-    });
+      // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
+      Ember.View.create({
+        classNameBindings: ['isEnabled::disabled']
+        isEnabled: true
+      });
 
   Will result in view instances with an HTML representation of:
 
-    <div id="ember1" class="ember-view"></div>
+      <div id="ember1" class="ember-view"></div>
 
   When the `isEnabled` property on the view is set to `false`, it will result
   in view instances with an HTML representation of:
 
-    <div id="ember1" class="ember-view disabled"></div>
-
+      <div id="ember1" class="ember-view disabled"></div>
 
   Updates to the the value of a class name binding will result in automatic update 
   of the  HTML `class` attribute in the view's rendered HTML representation.
@@ -13448,7 +13471,7 @@ Ember.View.reopenClass({
 
   */
   _parsePropertyPath: function(path) {
-    var split = path.split(/:/),
+    var split = path.split(':'),
         propertyPath = split[0],
         classNames = "",
         className,
@@ -14295,6 +14318,7 @@ Ember.ContainerView.states = {
             view.domManager.prepend(view, buffer.string());
           }
           childView.transitionTo('inDOM');
+          childView.invalidateRecursively('element');
           childView._notifyDidInsertElement();
         }
         previous = childView;
@@ -16777,7 +16801,7 @@ var merge = function(original, hash) {
   ### Deserializing A URL's Dynamic Segments
   When an application is first loaded or the URL is changed manually (e.g. through the browser's
   back button) the `deserialize` method of the URL's matching Ember.Route will be called with
-  the application's router as its first argument and a hash of the URLs dynamic segments and values
+  the application's router as its first argument and a hash of the URL's dynamic segments and values
   as its second argument.
 
   The following route structure when loaded with the URL "#/fixed/thefirstvalue/anotherFixed/thesecondvalue":
@@ -16813,8 +16837,8 @@ var merge = function(original, hash) {
   ### Serializing An Object For URLs with Dynamic Segments
   When transitioning into a Route whose `route` property contains dynamic segments the Route's
   `serialize` method is called with the Route's router as the first argument and the Route's
-  context as the second argument.  The return value of `serialize` will be use to populate the
-  dynamic segments and should be a object with keys that match the names of the dynamic sections.
+  context as the second argument.  The return value of `serialize` will be used to populate the
+  dynamic segments and should be an object with keys that match the names of the dynamic sections.
 
   Given the following route structure:
 
@@ -16903,7 +16927,7 @@ var merge = function(original, hash) {
 
   ## Injection of Controller Singletons
   During application initialization Ember will detect properties of the application ending in 'Controller',
-  create singleton instances of each class, and assign them as a properties on the router.  The property name
+  create singleton instances of each class, and assign them as properties on the router.  The property name
   will be the UpperCamel name converted to lowerCamel format. These controller classes should be subclasses
   of Ember.ObjectController, Ember.ArrayController, Ember.Controller, or a custom Ember.Object that includes the
   Ember.ControllerMixin mixin.
@@ -16917,7 +16941,7 @@ var merge = function(original, hash) {
 
   The controller singletons will have their `namespace` property set to the application and their `target`
   property set to the application's router singleton for easy integration with Ember's user event system.
-  See 'Changing View Hierarchy in Response To State Change' and 'Responding to User-initiated Events'
+  See 'Changing View Hierarchy in Response To State Change' and 'Responding to User-initiated Events.'
 
   ## Responding to User-initiated Events
   Controller instances injected into the router at application initialization have their `target` property
@@ -20484,15 +20508,157 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
 
   The Ember.Select view class renders a
   [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
-  allowing the user to choose from a list of options. The selected option(s)
-  are updated live in the `selection` property, while the corresponding value
-  is updated in the `value` property.
+  allowing the user to choose from a list of options. 
 
-  ### Using Strings
-  The simplest version of an Ember.Select takes an array of strings for the options
-  of a select box and a valueBinding to set the value.
+  The text and `value` property of each `<option>` element within the `<select>` element
+  are populated from the objects in the Element.Select's `content` property. The
+  underlying data object of the selected `<option>` is stored in the
+  Element.Select's `value` property.
+
+  ### `content` as an array of Strings
+  The simplest version of an Ember.Select takes an array of strings as its `content` property.
+  The string will be used as both the `value` property and the inner text of each `<option>`
+  element inside the rendered `<select>`.
 
   Example:
+
+      App.Names = ["Yehuda", "Tom"]
+
+      {{view Ember.Select contentBinding="App.Names"}}
+
+  Would result in the following HTML:
+
+      <select class="ember-select">
+        <option value="Yehuda">Yehuda</option>
+        <option value="Tom">Tom</option>
+      </select>
+
+  You can control which `<option>` is selected through the Ember.Select's
+  `value` property directly or as a binding:
+
+      App.Names = Ember.Object.create({
+        selected: 'Tom',
+        content: ["Yehuda", "Tom"]
+      })
+
+      {{view Ember.Select
+             contentBinding="App.controller.content"
+             valueBinding="App.controller.selected"
+      }}
+
+  Would result in the following HTML with the `<option>` for 'Tom' selected:
+
+      <select class="ember-select">
+        <option value="Yehuda">Yehuda</option>
+        <option value="Tom" selected="selected">Tom</option>
+      </select>
+
+
+  A user interacting with the rendered `<select>` to choose "Yehuda" would update
+  the value of `App.controller.selected` to "Yehuda". 
+
+  ### `content` as an Array of Objects
+  An Ember.Select can also take an array of JavaScript or Ember objects
+  as its `content` property.
+
+  When using objects you need to tell the Ember.Select which property should be
+  accessed on each object to supply the `value` attribute of the `<option>`
+  and which property should be used to supply the element text.
+
+  The `optionValuePath` option is used to specify the path on each object to
+  the desired property for the `value` attribute.  The `optionLabelPath` 
+  specifies the path on each object to the desired property for the 
+  element's text. Both paths must reference each object itself as 'content':
+
+
+      App.Programmers = [
+          Ember.Object.create({firstName: "Yehuda", id: 1}),
+          Ember.Object.create({firstName: "Tom",    id: 2})
+        ];
+
+      {{view Ember.Select
+             contentBinding="App.Programmers"
+             optionValuePath="content.id"
+             optionLabelPath="content.firstName"}}
+
+  Would result in the following HTML:
+
+      <select class="ember-select">
+        <option value>Please Select</option>
+        <option value="1">Yehuda</option>
+        <option value="2">Tom</option>
+      </select>
+
+
+  The `value` attribute of the selected `<option>` within an Ember.Select
+  can be bound to a property on another object by providing a
+  `valueBinding` option:
+
+
+      App.Programmers = [
+          Ember.Object.create({firstName: "Yehuda", id: 1}),
+          Ember.Object.create({firstName: "Tom",    id: 2})
+        ];
+
+      App.currentProgrammer = Ember.Object.create({
+        id: 2
+      })
+
+      {{view Ember.Select
+             contentBinding="App.controller.content"
+             optionValuePath="content.id"
+             optionLabelPath="content.firstName"
+             valueBinding="App.currentProgrammer.id"}}
+
+  Would result in the following HTML with a selected option:
+
+      <select class="ember-select">
+        <option value>Please Select</option>
+        <option value="1">Yehuda</option>
+        <option value="2" selected="selected">Tom</option>
+      </select>
+
+  Interacting with the rendered element by selecting the first option
+  ('Yehuda') will update the `id` value of `App.currentProgrammer`
+  to match the `value` property of the newly selected `<option>`.
+
+  Alternatively, you can control selection through the underlying objects
+  used to render each object providing a `selectionBinding`. When the selected
+  `<option>` is changed, the property path provided to `selectionBinding`
+  will be updated to match the content object of the rendered `<option>`
+  element: 
+
+      App.controller = Ember.Object.create({
+        selectedPerson: null,
+        content: [
+          Ember.Object.create({firstName: "Yehuda", id: 1}),
+          Ember.Object.create({firstName: "Tom",    id: 2})
+        ]
+      })
+
+      {{view Ember.Select
+             contentBinding="App.controller.content"
+             optionValuePath="content.id"
+             optionLabelPath="content.firstName"
+             selectionBinding="App.controller.selectedPerson"}}
+
+  Would result in the following HTML with a selected option:
+
+      <select class="ember-select">
+        <option value>Please Select</option>
+        <option value="1">Yehuda</option>
+        <option value="2" selected="selected">Tom</option>
+      </select>
+
+
+  Interacting with the rendered element by selecting the first option
+  ('Yehuda') will update the `selectedPerson` value of `App.controller`
+  to match the content object of the newly selected `<option>`. In this
+  case it is the first object in the `App.content.content` 
+
+  ### Supplying a Prompt
+  A `null` value for the Ember.Select's `value` or `selection` property
+  results in there being no `<option>` with a `selected` attribute:
 
       App.controller = Ember.Object.create({
         selected: null,
@@ -20514,56 +20680,33 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
         <option value="Tom">Tom</option>
       </select>
 
-  Selecting Yehuda from the select box will set `App.controller.selected` to "Yehuda"
-
-  ### Using Objects
-  An Ember.Select can also take an array of JS or Ember objects.
-
-  When using objects you need to supply optionLabelPath and optionValuePath parameters
-  which will be used to get the label and value for each of the options.
-
-  Usually you will bind to either the selection or the value attribute of the select.
-
-  Use selectionBinding if you would like to set the whole object as a property on the target.
-  Use valueBinding if you would like to set just the value.
-
-  Example using selectionBinding:
+  Although `App.controller.selected` is `null` and no `<option>`
+  has a `selected` attribute the rendered HTML will display the
+  first item as though it were selected. You can supply a string
+  value for the Ember.Select to display when there is no selection
+  with the `prompt` option:
 
       App.controller = Ember.Object.create({
-        selectedPerson: null,
-        selectedPersonId: null,
+        selected: null,
         content: [
-          Ember.Object.create({firstName: "Yehuda", id: 1}),
-          Ember.Object.create({firstName: "Tom",    id: 2})
+          "Yehuda",
+          "Tom"
         ]
       })
 
       {{view Ember.Select
              contentBinding="App.controller.content"
-             optionLabelPath="content.firstName"
-             optionValuePath="content.id"
-             selectionBinding="App.controller.selectedPerson"
-             prompt="Please Select"}}
+             valueBinding="App.controller.selected"
+             prompt="Please select a name"
+      }}
+
+  Would result in the following HTML:
 
       <select class="ember-select">
-        <option value>Please Select</option>
-        <option value="1">Yehuda</option>
-        <option value="2">Tom</option>
+        <option>Please select a name</option>
+        <option value="Yehuda">Yehuda</option>
+        <option value="Tom">Tom</option>
       </select>
-
-  Selecting Yehuda here will set `App.controller.selectedPerson` to
-  the Yehuda object.
-
-  Example using valueBinding:
-
-      {{view Ember.Select
-             contentBinding="App.controller.content"
-             optionLabelPath="content.firstName"
-             optionValuePath="content.id"
-             valueBinding="App.controller.selectedPersonId"
-             prompt="Please Select"}}
-
-  Selecting Yehuda in this case will set `App.controller.selectedPersonId` to 1.
 
   @extends Ember.View
 */
@@ -20942,8 +21085,8 @@ Ember.onLoad('application', bootstrap);
 
 })();
 
-// Version: v1.0.pre-53-g9713824
-// Last commit: 9713824 (2012-08-17 12:19:14 -0700)
+// Version: v1.0.pre-68-ge60e818
+// Last commit: e60e818 (2012-08-24 14:59:34 -0700)
 
 
 (function() {
