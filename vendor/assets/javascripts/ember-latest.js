@@ -142,8 +142,8 @@ window.ember_deprecateFunc  = Ember.deprecateFunc("ember_deprecateFunc is deprec
 
 })();
 
-// Version: v1.0.pre-68-ge60e818
-// Last commit: e60e818 (2012-08-24 14:59:34 -0700)
+// Version: v1.0.pre-88-g7642bfe
+// Last commit: 7642bfe (2012-09-04 18:11:39 -0700)
 
 
 (function() {
@@ -351,6 +351,27 @@ if ('undefined' === typeof ember_deprecateFunc) {
   Override this to provide more robust logging functionality.
 */
 Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
+
+
+// ..........................................................
+// ERROR HANDLING
+//
+
+Ember.onerror = null;
+
+Ember.handleErrors = function(func, context) {
+  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
+  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
+  if ('function' === typeof Ember.onerror) {
+    try {
+      return func.apply(context || this);
+    } catch (error) {
+      Ember.onerror(error);
+    }
+  } else {
+    return func.apply(context || this);
+  }
+};
 
 })();
 
@@ -1033,7 +1054,7 @@ Ember.canInvoke = canInvoke;
 */
 Ember.tryInvoke = function(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
-    return obj[methodName].apply(obj, args);
+    return obj[methodName].apply(obj, args || []);
   }
 };
 
@@ -3414,19 +3435,10 @@ function invoke(target, method, args, ignore) {
     args = args.length > ignore ? slice.call(args, ignore) : null;
   }
 
-  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
-  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
-  if ('function' === typeof Ember.onerror) {
-    try {
-      // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
-      return method.apply(target || this, args || []);
-    } catch (error) {
-      Ember.onerror(error);
-    }
-  } else {
+  return Ember.handleErrors(function() {
     // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
     return method.apply(target || this, args || []);
-  }
+  }, this);
 }
 
 
@@ -3852,7 +3864,7 @@ Ember.run.later = function(target, method) {
 /** @private */
 function invokeOnceTimer(guid, onceTimers) {
   if (onceTimers[this.tguid]) { delete onceTimers[this.tguid][this.mguid]; }
-  if (timers[guid]) { invoke(this.target, this.method, this.args, 2); }
+  if (timers[guid]) { invoke(this.target, this.method, this.args); }
   delete timers[guid];
 }
 
@@ -3914,11 +3926,11 @@ function scheduleOnce(queue, target, method, args) {
   @returns {Object} timer
 */
 Ember.run.once = function(target, method) {
-  return scheduleOnce('actions', target, method, slice.call(arguments));
+  return scheduleOnce('actions', target, method, slice.call(arguments, 2));
 };
 
-Ember.run.scheduleOnce = function(queue, target, method) {
-  return scheduleOnce(queue, target, method, slice.call(arguments));
+Ember.run.scheduleOnce = function(queue, target, method, args) {
+  return scheduleOnce(queue, target, method, slice.call(arguments, 3));
 };
 
 var scheduledNext;
@@ -5457,6 +5469,8 @@ if (!Ember.keys) {
 // ERROR
 //
 
+var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
+
 /**
   @class
 
@@ -5465,10 +5479,10 @@ if (!Ember.keys) {
 Ember.Error = function() {
   var tmp = Error.prototype.constructor.apply(this, arguments);
 
-  for (var p in tmp) {
-    if (tmp.hasOwnProperty(p)) { this[p] = tmp[p]; }
+  // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
+  for (var idx = 0; idx < errorProps.length; idx++) {
+    this[errorProps[idx]] = tmp[errorProps[idx]];
   }
-  this.message = tmp.message;
 };
 
 Ember.Error.prototype = Ember.create(Error.prototype);
@@ -7626,6 +7640,26 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     var len = get(this, 'length');
     if (len === 0) return this;
     var objects = this.toArray().reverse();
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  /**
+    Replace all the the receiver's content with content of the argument.
+    If argument is an empty array receiver will be cleared.
+
+        var colors = ["red", "green", "blue"];
+        colors.setObjects(["black", "white"]); => ["black", "white"]
+        colors.setObjects([]); => []
+
+    @param {Ember.Array} objects array whose content will be used for replacing
+        the content of the receiver
+    @return {Ember.Array} receiver with the new content
+   */
+  setObjects: function(objects) {
+    if (objects.length === 0) return this.clear();
+
+    var len = get(this, 'length');
     this.replace(0, len, objects);
     return this;
   },
@@ -10299,36 +10333,193 @@ var get = Ember.get, set = Ember.set;
 /**
   @class
 
-  An Ember.Application instance serves as the namespace in which you define your
-  application's classes. You can also override the configuration of your
+  An instance of `Ember.Application` is the starting point for every Ember.js
+  application. It helps to instantiate, initialize and coordinate the many
+  objects that make up your app.
+
+  Each Ember.js app has one and only one `Ember.Application` object. In fact, the very
+  first thing you should do in your application is create the instance:
+
+  ```javascript
+  window.App = Ember.Application.create();
+  ```
+
+  Typically, the application object is the only global variable. All other
+  classes in your app should be properties on the `Ember.Application` instance,
+  which highlights its first role: a global namespace.
+
+  For example, if you define a view class, it might look like this:
+
+  ```javascript
+  App.MyView = Ember.View.extend();
+  ```
+
+  After all of your classes are defined, call `App.initialize()` to start the
   application.
 
-  By default, Ember.Application will begin listening for events on the document.
-  If your application is embedded inside a page, instead of controlling the
-  entire document, you can specify which DOM element to attach to by setting
-  the `rootElement` property to a CSS selector.
+  Because `Ember.Application` inherits from `Ember.Namespace`, any classes
+  you create will have useful string representations when calling `toString()`;
+  see the `Ember.Namespace` documentation for more information.
 
-      MyApp = Ember.Application.create({
-        rootElement: '#my-app'
-      });
+  While you can think of your `Ember.Application` as a container that holds the
+  other classes in your application, there are several other responsibilities
+  going on under-the-hood that you may want to understand.
 
-  The root of an Ember.Application must not be removed during the course of the
-  page's lifetime. If you have only a single conceptual application for the
-  entire page, and are not embedding any third-party Ember applications
-  in your page, use the default document root for your application.
+  ### Event Delegation
 
-  You only need to specify the root if your page contains multiple instances
-  of Ember.Application.
+  Ember.js uses a technique called _event delegation_. This allows the framework
+  to set up a global, shared event listener instead of requiring each view to do
+  it manually. For example, instead of each view registering its own `mousedown`
+  listener on its associated element, Ember.js sets up a `mousedown` listener on
+  the `body`.
 
-  @extends Ember.Object
+  If a `mousedown` event occurs, Ember.js will look at the target of the event and
+  start walking up the DOM node tree, finding corresponding views and invoking their
+  `mouseDown` method as it goes.
+
+  `Ember.Application` has a number of default events that it listens for, as well
+  as a mapping from lowercase events to camel-cased view method names. For
+  example, the `keypress` event causes the `keyPress` method on the view to be
+  called, the `dblclick` event causes `doubleClick` to be called, and so on.
+
+  If there is a browser event that Ember.js does not listen for by default, you
+  can specify custom events and their corresponding view method names by setting
+  the application's `customEvents` property:
+
+  ```javascript
+  App = Ember.Application.create({
+    customEvents: {
+      // add support for the loadedmetadata media
+      // player event
+      'loadedmetadata': "loadedMetadata"
+    }
+  });
+  ```
+
+  By default, the application sets up these event listeners on the document body.
+  However, in cases where you are embedding an Ember.js application inside an
+  existing page, you may want it to set up the listeners on an element inside
+  the body.
+
+  For example, if only events inside a DOM element with the ID of `ember-app` should
+  be delegated, set your application's `rootElement` property:
+
+  ```javascript
+  window.App = Ember.Application.create({
+    rootElement: '#ember-app'
+  });
+  ```
+
+  The `rootElement` can be either a DOM element or a jQuery-compatible selector
+  string. Note that *views appended to the DOM outside the root element will not
+  receive events.* If you specify a custom root element, make sure you only append
+  views inside it!
+
+  To learn more about the advantages of event delegation and the Ember.js view layer,
+  and a list of the event listeners that are setup by default, visit the
+  [Ember.js View Layer guide](http://emberjs.com/guides/view_layer#toc_event-delegation).
+
+  ### Dependency Injection
+
+  One thing you may have noticed while using Ember.js is that you define *classes*, not
+  *instances*. When your application loads, all of the instances are created for you.
+  Creating these instances is the responsibility of `Ember.Application`.
+
+  When the `Ember.Application` initializes, it will look for an `Ember.Router` class
+  defined on the applications's `Router` property, like this:
+
+  ```javascript
+  App.Router = Ember.Router.extend({
+  // ...
+  });
+  ```
+
+  If found, the router is instantiated and saved on the application's `router`
+  property (note the lowercase 'r'). While you should *not* reference this router
+  instance directly from your application code, having access to `App.router`
+  from the console can be useful during debugging.
+
+  After the router is created, the application loops through all of the
+  registered _injections_ and invokes them once for each property on the
+  `Ember.Application` object.
+
+  An injection is a function that is responsible for instantiating objects from
+  classes defined on the application. By default, the only injection registered
+  instantiates controllers and makes them available on the router.
+
+  For example, if you define a controller class:
+
+  ```javascript
+  App.MyController = Ember.Controller.extend({
+    // ...
+  });
+  ```
+
+  Your router will receive an instance of `App.MyController` saved on its
+  `myController` property.
+
+  Libraries on top of Ember.js can register additional injections. For example,
+  if your application is using Ember Data, it registers an injection that
+  instantiates `DS.Store`:
+
+  ```javascript
+  Ember.Application.registerInjection({
+    name: 'store',
+    before: 'controllers',
+
+    injection: function(app, router, property) {
+      if (property === 'Store') {
+        set(router, 'store', app[property].create());
+      }
+    }
+  });
+  ```
+
+  ### Routing
+
+  In addition to creating your application's router, `Ember.Application` is also
+  responsible for telling the router when to start routing.
+
+  By default, the router will begin trying to translate the current URL into
+  application state once the browser emits the `DOMContentReady` event. If you
+  need to defer routing, you can call the application's `deferReadiness()` method.
+  Once routing can begin, call the `advanceReadiness()` method.
+
+  If there is any setup required before routing begins, you can implement a `ready()`
+  method on your app that will be invoked immediately before routing begins:
+
+  ```javascript
+  window.App = Ember.Application.create({
+    ready: function() {
+      this.set('router.enableLogging', true);
+    }
+  });
+
+  To begin routing, you must have at a minimum a top-level controller and view.
+  You define these as `App.ApplicationController` and `App.ApplicationView`,
+  respectively. Your application will not work if you do not define these two
+  mandatory classes. For example:
+
+  ```javascript
+  App.ApplicationView = Ember.View.extend({
+    templateName: 'application'
+  });
+  App.ApplicationController = Ember.Controller.extend();
+  ```
+
+  @extends Ember.Namespace
 */
 Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
 
   /**
-    The root DOM element of the Application.
+    The root DOM element of the Application. This can be specified as an
+    element or a
+    [jQuery-compatible selector string](http://api.jquery.com/category/selectors/).
 
-    Can be specified as DOMElement or a selector string.
+    This is the element that will be passed to the Application's,
+    `eventDispatcher`, which sets up the listeners for event delegation. Every
+    view in your application should be a child of the element you specify here.
 
     @type DOMElement
     @default 'body'
@@ -10336,12 +10527,41 @@ Ember.Application = Ember.Namespace.extend(
   rootElement: 'body',
 
   /**
+    The `Ember.EventDispatcher` responsible for delegating events to this
+    application's views.
+
+    The event dispatcher is created by the application at initialization time
+    and sets up event listeners on the DOM element described by the
+    application's `rootElement` property.
+
+    See the documentation for `Ember.EventDispatcher` for more information.
+
     @type Ember.EventDispatcher
     @default null
   */
   eventDispatcher: null,
 
   /**
+    The DOM events for which the event dispatcher should listen.
+
+    By default, the application's `Ember.EventDispatcher` listens
+    for a set of standard DOM events, such as `mousedown` and
+    `keyup`, and delegates them to your application's `Ember.View`
+    instances.
+
+    If you would like additional events to be delegated to your
+    views, set your `Ember.Application`'s `customEvents` property
+    to a hash containing the DOM event name as the key and the
+    corresponding view method name as the value. For example:
+
+        App = Ember.Application.create({
+          customEvents: {
+            // add support for the loadedmetadata media
+            // player event
+            'loadedmetadata': "loadedMetadata"
+          }
+        });
+
     @type Object
     @default null
   */
@@ -11138,31 +11358,34 @@ Ember.EventDispatcher = Ember.Object.extend(
     var self = this;
 
     rootElement.delegate('.ember-view', event + '.ember', function(evt, triggeringManager) {
+      return Ember.handleErrors(function() {
+        var view = Ember.View.views[this.id],
+            result = true, manager = null;
 
-      var view = Ember.View.views[this.id],
-          result = true, manager = null;
+        manager = self._findNearestEventManager(view,eventName);
 
-      manager = self._findNearestEventManager(view,eventName);
+        if (manager && manager !== triggeringManager) {
+          result = self._dispatchEvent(manager, evt, eventName, view);
+        } else if (view) {
+          result = self._bubbleEvent(view,evt,eventName);
+        } else {
+          evt.stopPropagation();
+        }
 
-      if (manager && manager !== triggeringManager) {
-        result = self._dispatchEvent(manager, evt, eventName, view);
-      } else if (view) {
-        result = self._bubbleEvent(view,evt,eventName);
-      } else {
-        evt.stopPropagation();
-      }
-
-      return result;
+        return result;
+      }, this);
     });
 
     rootElement.delegate('[data-ember-action]', event + '.ember', function(evt) {
-      var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
-          action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
-          handler  = action.handler;
+      return Ember.handleErrors(function() {
+        var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
+            action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
+            handler  = action.handler;
 
-      if (action.eventName === eventName) {
-        return handler(evt);
-      }
+        if (action.eventName === eventName) {
+          return handler(evt);
+        }
+      }, this);
     });
   },
 
@@ -12643,8 +12866,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @param {Function} fn the function that inserts the element into the DOM
   */
   _insertElementLater: function(fn) {
-    this._lastInsert = Ember.guidFor(fn);
-    Ember.run.schedule('render', this, this.invokeForState, 'insertElement', fn);
+    this._scheduledInsert = Ember.run.scheduleOnce('render', this, '_insertElement', fn);
+  },
+
+  /**
+   @private
+  */
+  _insertElement: function (fn) {
+    this._scheduledInsert = null;
+    this.invokeForState('insertElement', fn);
   },
 
   /**
@@ -13601,7 +13831,10 @@ Ember.View.states = {
 
     destroyElement: function(view) {
       set(view, 'element', null);
-      view._lastInsert = null;
+      if (view._scheduledInsert) {
+        Ember.run.cancel(view._scheduledInsert);
+        view._scheduledInsert = null;
+      }
       return view;
     },
 
@@ -13632,9 +13865,6 @@ Ember.View.states.preRender = {
   // a view leaves the preRender state once its element has been
   // created (createElement).
   insertElement: function(view, fn) {
-    if (view._lastInsert !== Ember.guidFor(fn)){
-      return;
-    }
     view.createElement();
     view._notifyWillInsertElement();
     // after createElement, the view will be in the hasElement state.
@@ -13803,8 +14033,11 @@ Ember.View.states.hasElement = {
   destroyElement: function(view) {
     view._notifyWillDestroyElement();
     view.domManager.remove(view);
-    view._lastInsert = null;
     set(view, 'element', null);
+    if (view._scheduledInsert) {
+      Ember.run.cancel(view._scheduledInsert);
+      view._scheduledInsert = null;
+    }
     return view;
   },
 
@@ -13835,9 +14068,6 @@ Ember.View.states.inDOM = {
   parentState: Ember.View.states.hasElement,
 
   insertElement: function(view, fn) {
-    if (view._lastInsert !== Ember.guidFor(fn)){
-      return;
-    }
     throw "You can't insert an element into the DOM that has already been inserted";
   }
 };
@@ -15490,6 +15720,17 @@ Ember.StateManager = Ember.State.extend(
   currentState: null,
 
   /**
+   The path of the current state. Returns a string representation of the current
+   state.
+
+   @type String
+   @readOnly
+  */
+  currentPath: Ember.computed('currentState', function() {
+    return get(this, 'currentState.path');
+  }).cacheable(),
+
+  /**
     The name of transitionEvent that this stateManager will dispatch
 
     @property {String}
@@ -17082,6 +17323,7 @@ Ember.Router = Ember.StateManager.extend(
     var routableState;
 
     try {
+      path = path.replace(get(this, 'rootURL'), '');
       path = path.replace(/^(?=[^\/])/, "/");
 
       this.send('navigateAway');
@@ -18556,7 +18798,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
     /** @private */
     var observer = function() {
-      Ember.run.once(bindView, 'rerenderIfNeeded');
+      Ember.run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
     };
 
     // Observes the given property on the context and
@@ -18807,7 +19049,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     /** @private */
     invoker = function() {
-      Ember.run.once(observer);
+      Ember.run.scheduleOnce('render', observer);
     };
 
     // Add an observer to the view for when the property changes.
@@ -18933,7 +19175,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     /** @private */
     invoker = function() {
-      Ember.run.once(observer);
+      Ember.run.scheduleOnce('render', observer);
     };
 
     if (path !== '' && path !== 'this') {
@@ -19302,7 +19544,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
       <script type="text/x-handlebars">
         {{#collection contentBinding="App.items"}}
-          Hi {{content.name}}
+          Hi {{view.content.name}}
         {{/collection}}
       </script>
 
@@ -19343,7 +19585,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
       ]
 
       App.AnItemView = Ember.View.extend({
-        template: Ember.Handlebars.compile("Greetings {{content.name}}")
+        template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
       })
 
   Will result in the HTML structure below
@@ -19361,7 +19603,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
       <script type="text/x-handlebars">
         {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
-          Hi {{content.name}}
+          Hi {{view.content.name}}
         {{/collection}}
       </script>
 
@@ -19375,7 +19617,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
           {{#collection contentBinding="App.items"
                         itemTagName="p"
                         itemClassNames="greeting"}}
-            Howdy {{content.name}}
+            Howdy {{view.content.name}}
           {{/collection}}
         </script>
 
@@ -20932,7 +21174,7 @@ Ember.SelectOption = Ember.View.extend({
     var content = get(this, 'content'),
         selection = get(this, 'parentView.selection');
     if (get(this, 'parentView.multiple')) {
-      return selection && indexOf(selection, content) > -1;
+      return selection && indexOf(selection, content.valueOf()) > -1;
     } else {
       // Primitives get passed through bindings as objects... since
       // `new Number(4) !== 4`, we use `==` below
@@ -20960,7 +21202,6 @@ Ember.SelectOption = Ember.View.extend({
     }).property(valuePath).cacheable());
   }, 'parentView.optionValuePath')
 });
-
 
 })();
 
@@ -21085,8 +21326,8 @@ Ember.onLoad('application', bootstrap);
 
 })();
 
-// Version: v1.0.pre-68-ge60e818
-// Last commit: e60e818 (2012-08-24 14:59:34 -0700)
+// Version: v1.0.pre-88-g7642bfe
+// Last commit: 7642bfe (2012-09-04 18:11:39 -0700)
 
 
 (function() {
