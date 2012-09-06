@@ -20,6 +20,12 @@ App.Router = Em.Router.extend
       connectOutlets: (router, post) ->
         postsController = router.get('postsController')
         postsController.connectOutlet('post', post)
+      showComments: Em.Route.transitionTo('comments')
+      comments: Em.Route.extend
+        route: '/comments'
+        connectOutlets: (router) ->
+          postController = router.get('postController')
+          postController.connectOutlet('comments', postController.get('comments'))
     edit: Em.Route.extend
       # SETUP
       route: '/:post_id/edit'

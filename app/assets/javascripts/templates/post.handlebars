@@ -9,4 +9,9 @@
 
   <a {{action editPost content href=true}} class='secondary button'>Edit</a>
   <a {{action delete content}} class="alert button">Delete</a>
+
+  <div>
+    <a {{action showComments href=true}}>Comments ({{comments.length}})</a>
+    {{outlet}}
+  </div>
 </div>
