@@ -12,11 +12,11 @@ Post.destroy_all
     p.title = Faker::Company.catch_phrase
     p.body = Faker::Lorem.paragraphs.join(' ')
 
-    Random.rand(10).times do |j|
+    rand(10).next.times do |j|
       p.comments.build :body => Faker::Lorem.paragraphs.join(' ')
     end
 
-    Random.rand(10).times do |j|
+    rand(10).next.times do |j|
       p.trackbacks.build :url => Faker::Internet.domain_name
     end
   end
