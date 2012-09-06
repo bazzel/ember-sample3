@@ -10,9 +10,9 @@
   <a {{action editPost content href=true}} class='secondary button'>Edit</a>
   <a {{action delete content}} class="alert button">Delete</a>
 
-  <div>
-    <a {{action showComments href=true}}>Comments ({{comments.length}})</a>
-    <a {{action showTrackbacks href=true}}>Trackbacks ({{trackbacks.length}})</a>
-    {{outlet}}
-  </div>
+  <dl class="tabs pill">
+    <dd><a {{action showComments href=true}}>Comments ({{comments.length}})</a></dd>
+    <dd><a {{action showTrackbacks href=true}}>Trackbacks ({{trackbacks.length}})</a></dd>
+  </dl>
+  {{outlet}}
 </div>
