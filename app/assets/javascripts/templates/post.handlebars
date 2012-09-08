@@ -10,9 +10,6 @@
   <a {{action editPost content href=true}} class='secondary button'>Edit</a>
   <a {{action deletePost content}} class="alert button">Delete</a>
 
-  <dl class="tabs pill">
-    <dd><a {{action showComments href=true}}>Comments ({{comments.length}})</a></dd>
-    <dd><a {{action showTrackbacks href=true}}>Trackbacks ({{trackbacks.length}})</a></dd>
-  </dl>
+  {{outlet "navigation"}}
   {{outlet}}
 </div>

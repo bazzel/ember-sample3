@@ -36,8 +36,8 @@ App.Router = Em.Router.extend
         route: '/:post_id'
         initialState: 'index'
         connectOutlets: (router, post) ->
-          postsController = router.get('postsController')
-          postsController.connectOutlet('post', post)
+          router.get('postsController').connectOutlet('post', post)
+          router.get('postController').connectOutlet 'navigation', 'navigation'
         # EVENTS
         showComments: Em.Route.transitionTo('comments')
         showTrackbacks: Em.Route.transitionTo('trackbacks')
@@ -51,12 +51,14 @@ App.Router = Em.Router.extend
           connectOutlets: (router) ->
             postController = router.get('postController')
             postController.connectOutlet('comments', postController.get('comments'))
+            router.set('navigationController.selected', 'comments')
         trackbacks: Em.Route.extend
           # SETUP
           route: '/trackbacks'
           connectOutlets: (router) ->
             postController = router.get('postController')
             postController.connectOutlet('trackbacks', postController.get('trackbacks'))
+            router.set('navigationController.selected', 'trackbacks')
       edit: Em.Route.extend
         # SETUP
         route: '/:post_id/edit'
