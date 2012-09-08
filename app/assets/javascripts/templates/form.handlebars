@@ -1,4 +1,4 @@
-<form {{action save content on="submit"}}>
+<form {{action savePost content on="submit"}}>
   <label for="post_title" class="control-label">Title</label>
   {{view Em.TextField valueBinding="title" id="post_title" placeholder="Title"}}
 
@@ -11,8 +11,8 @@
 
   <button type="submit" class="button">Save</button>
   {{#unless isNew}}
-    <button {{action delete content}} class="alert button">Delete</button>
+    <button {{action deletePost content}} class="alert button">Delete</button>
   {{/unless}}
-  <a {{action cancel content}} class="secondary button">Cancel</a>
+  <a {{action cancelPost content}} class="secondary button">Cancel</a>
 </form>
 

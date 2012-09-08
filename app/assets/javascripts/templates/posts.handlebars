@@ -4,7 +4,7 @@
     {{#each content}}
       <li>
         <a {{action showPost this href=true}}>{{title}}</a>
-        <a {{action delete this}} class="delete-post">Delete</a>
+        <a {{action deletePost this}} class="delete-post">Delete</a>
       </li>
     {{/each}}
   </ul>
