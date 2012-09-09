@@ -1,1 +1,1 @@
-App.NavigationController = Em.Controller.extend()
+App.NavigationController = Em.ObjectController.extend()
