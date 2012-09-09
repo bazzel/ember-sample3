@@ -37,7 +37,7 @@ App.Router = Em.Router.extend
         initialState: 'index'
         connectOutlets: (router, post) ->
           router.get('postsController').connectOutlet('post', post)
-          router.get('postController').connectOutlet 'navigation', 'navigation'
+          router.get('postController').connectOutlet 'navigation', 'navigation', post
         # EVENTS
         showComments: Em.Route.transitionTo('comments')
         showTrackbacks: Em.Route.transitionTo('trackbacks')
