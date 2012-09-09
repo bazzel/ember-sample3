@@ -15,6 +15,7 @@
 //= require handlebars
 //= require ember-latest
 //= require ember-data-latest
+//= require jquery.condense
 //= require_self
 //= require app
 App = Em.Application.create();
