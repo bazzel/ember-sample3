@@ -3,8 +3,11 @@
   <ul class='posts'>
     {{#each content}}
       <li>
-        <a {{action showPost this href=true}}>{{title}}</a>
-        <a {{action deletePost this}} class="delete-post">Delete</a>
+        <div class="radius panel post">
+          <a {{action showPost this href=true}}><img src="http://placehold.it/100x100"/></a>
+          <a {{action deletePost this}} class="zoom-post secondary tiny button">Zoom</a>
+          <a {{action deletePost this}} class="delete-post tiny button">Delete</a>
+        <div>
       </li>
     {{/each}}
   </ul>

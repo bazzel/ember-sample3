@@ -1,8 +1,27 @@
+@import "compass/typography/lists/bullets";
+
 ul.posts {
+  @include no-bullets;
   li {
-    clear: both;
-    a.delete-post {
-      float: right;
+    text-align: center;
+    width: 33%;
+    height: 13em;
+    padding: .5em 1em .5em 0;
+    float: left;
+    .post {
+      padding: 9px;
+      height: 100%;
+      position: relative;
+      .delete-post, .zoom-post {
+        position: absolute;
+        bottom: 9px;
+      }
+      .delete-post {
+        right: 9px;
+      }
+      .zoom-post {
+        left: 9px;
+      }
     }
   }
 }
