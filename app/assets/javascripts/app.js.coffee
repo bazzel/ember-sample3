@@ -7,5 +7,5 @@
 #= require_tree ./routes
 #= require_self
 
-$ ->
-  App.initialize()
+#$ ->
+  #App.initialize()
