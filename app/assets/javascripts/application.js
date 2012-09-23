@@ -12,6 +12,7 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require foundation/jquery.foundation.reveal
 //= require handlebars
 //= require ember-latest
 //= require ember-data-latest

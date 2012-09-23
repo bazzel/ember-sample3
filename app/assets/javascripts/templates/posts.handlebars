@@ -5,7 +5,9 @@
       <li>
         <div class="radius panel post">
           <a {{action showPost this href=true}}><img src="http://placehold.it/100x100"/></a>
-          <a {{action deletePost this}} class="zoom-post secondary tiny button">Zoom</a>
+          {{#view App.ZoomPostView contentBinding="this"}}
+            <a class="zoom-post secondary tiny button">Zoom</a>
+          {{/view}}
           <a {{action deletePost this}} class="delete-post tiny button">Delete</a>
         <div>
       </li>

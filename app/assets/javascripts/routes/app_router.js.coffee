@@ -31,6 +31,7 @@ App.Router = Em.Router.extend
         route: '/'
         connectOutlets: (router) ->
           router.get('applicationController').connectOutlet('posts', App.Post.find())
+          router.get('applicationController').connectOutlet('reveal', 'reveal')
       show: Em.Route.extend
         # SETUP
         route: '/:post_id'
