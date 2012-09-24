@@ -2,6 +2,7 @@ App.Post = DS.Model.extend
   title: DS.attr('string')
   body: DS.attr('string')
   published: DS.attr('boolean')
+  # https://github.com/emberjs/data/issues/365
   picture_number: DS.attr('number')
   comments: DS.hasMany('App.Comment',
     embedded: true

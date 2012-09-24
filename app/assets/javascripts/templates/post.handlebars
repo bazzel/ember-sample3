@@ -1,8 +1,11 @@
 <div class="panel">
   {{#if isLoaded}}
+    {{#view App.AlertBoxView isPublishedBinding="published"}}
+      This post is {{#unless published}}not{{/unless}} published.
+    {{/view}}
+
     <h4>{{title}}</h4>
     <p class="truncate">{{body}}</p>
-    <p><b>Published:</b>{{published}}</p>
   {{else}}
     <p>Loading</p>
   {{/if}}
