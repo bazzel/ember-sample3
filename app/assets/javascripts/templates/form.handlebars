@@ -9,6 +9,14 @@
     {{view Ember.Checkbox checkedBinding="published"}} Published
   </label>
 
+  <label for="post_category" class="control-label">Category</label>
+  {{view Em.TextField valueBinding="picture_number" type="number"}}
+  {{view Em.Select
+      contentBinding="categories"
+      selectionBinding="category"
+      optionValuePath="content.id"
+      optionLabelPath="content.name"}}
+
   <button type="submit" class="button">Save</button>
   {{#unless isNew}}
     <button {{action deletePost content}} class="alert button">Delete</button>
