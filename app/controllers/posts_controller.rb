@@ -10,10 +10,12 @@ class PostsController < ApplicationController
   end
 
   def create
+    set_category_id(params)
     respond_with Post.create(params[:post])
   end
 
   def update
+    set_category_id(params)
     @post = Post.find(params[:id])
     @post.update_attributes(params[:post])
     respond_with @post
@@ -25,6 +27,11 @@ class PostsController < ApplicationController
 
     respond_with @post
   end
+
+  def set_category_id(params)
+    params[:post][:category_id] = params[:post][:category][:id]
+  end
+
 #
 #   # GET /posts/new
 #   # GET /posts/new.json
