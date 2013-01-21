@@ -4,7 +4,7 @@
     {{#each content}}
       <li>
         <div class="radius panel post">
-          <a {{action showPost this href=true}}><img {{bindAttr src="imageUrl"}}/></a>
+          {{#linkTo post this}}<img {{bindAttr src="imageUrl"}}/>{{/linkTo}}
           {{#view App.ZoomPostView contentBinding="this"}}
             <a class="zoom-post secondary tiny button">Zoom</a>
           {{/view}}

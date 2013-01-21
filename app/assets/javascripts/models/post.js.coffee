@@ -2,17 +2,10 @@ App.Post = DS.Model.extend
   title: DS.attr('string')
   body: DS.attr('string')
   published: DS.attr('boolean')
-  # https://github.com/emberjs/data/issues/365
-  picture_number: DS.attr('number')
-  comments: DS.hasMany('App.Comment',
-    embedded: true
-  )
-  trackbacks: DS.hasMany('App.Trackback',
-    embedded: true
-  )
-  category: DS.belongsTo('App.Category',
-    embedded: true
-  )
+  pictureNumber: DS.attr('number')
+  comments: DS.hasMany('App.Comment')
+  trackbacks: DS.hasMany('App.Trackback')
+  category: DS.belongsTo('App.Category')
   categoryName: ( ->
     @get('category.name')
   ).property('category')
@@ -20,6 +13,6 @@ App.Post = DS.Model.extend
     url = "http://lorempixel.com".w()
     # Show b/w image when not published
     url.push 'g' unless @get("published")
-    url.push "120/120/#{@get('categoryName')}/#{@get('picture_number')}"
+    url.push "120/120/#{@get('categoryName')}/#{@get('pictureNumber')}"
     url.join('/')
-  ).property('published', 'categoryName', 'picture_number')
+  ).property('published', 'categoryName', 'pictureNumber')

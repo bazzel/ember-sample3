@@ -1,1 +1,2 @@
-App.ApplicationController = Em.Controller.extend()
+App.ApplicationController = Em.Controller.extend
+  needs: 'posts'.w()
