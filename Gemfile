@@ -40,4 +40,4 @@ gem 'jquery-rails'
 # To use debugger
 # gem 'debugger'
 
-gem "ember-rails", "~> 0.6.0"
+gem "ember-rails", git: 'git://github.com/emberjs/ember-rails.git'
