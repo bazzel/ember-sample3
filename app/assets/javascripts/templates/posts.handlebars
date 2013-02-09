@@ -1,7 +1,7 @@
 <div class='six columns'>
   <a {{action newPost href=true}} class='button'>New Post</a>
   <ul class='posts'>
-    {{#each content}}
+    {{#each controller}}
       <li>
         <div class="radius panel post">
           {{#linkTo "posts.show" this}}<img {{bindAttr src="imageUrl"}}/>{{/linkTo}}
