@@ -4,7 +4,7 @@
     {{#each content}}
       <li>
         <div class="radius panel post">
-          {{#linkTo posts.show this}}<img {{bindAttr src="imageUrl"}}/>{{/linkTo}}
+          {{#linkTo "posts.show" this}}<img {{bindAttr src="imageUrl"}}/>{{/linkTo}}
           <a {{action openModal this}} class="zoom-post secondary tiny button">Zoom</a>
           <a {{action deletePost this}} class="delete-post tiny button">Delete</a>
         <div>

@@ -14,7 +14,7 @@
 //= require jquery_ujs
 //= require foundation/jquery.foundation.reveal
 //= require handlebars
-//= require ember-1.0.0-pre.4
+//= require ember-latest
 //= require ember-data
 //= require jquery.condense
 //= require_self
