@@ -3,6 +3,12 @@ App.Router.map ->
     @route 'show',
       path: '/:post_id'
 
+App.ApplicationRoute = Em.Route.extend
+  events:
+    openModal: (content) ->
+      @controllerFor('reveal').set('content', content)
+      $('#myModal').reveal()
+
 App.IndexRoute = Em.Route.extend
   redirect: ->
     @transitionTo 'posts'
