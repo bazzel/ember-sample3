@@ -1,6 +1,6 @@
 App.Router.map ->
   @resource 'posts', ->
-    @resource 'post',
+    @route 'show',
       path: '/:post_id'
 
 App.IndexRoute = Em.Route.extend

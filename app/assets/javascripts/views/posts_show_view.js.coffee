@@ -1,5 +1,4 @@
-App.PostView = Ember.View.extend
-  templateName: 'post'
+App.PostsShowView = Ember.View.extend
   didInsertElement: ->
     @$('.truncate').condense
       moreText: 'more &raquo;'

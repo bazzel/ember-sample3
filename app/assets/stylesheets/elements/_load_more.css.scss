@@ -1,0 +1,12 @@
+@mixin load-more {
+  width: auto;
+  height: auto;
+  float: none;
+  clear:both;
+}
+
+ul {
+  li.load-more {
+    @include load-more;
+  }
+}

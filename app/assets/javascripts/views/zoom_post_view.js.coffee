@@ -1,4 +1,6 @@
 App.ZoomPostView = Em.View.extend
   click: ->
-    App.router.revealController.set('content', @content)
-    $('#myModal').reveal()
+    ##TODO: How to set the controller's content?
+    #App.router.revealController.set('content', @content)
+    #$('#myModal').reveal()
+    alert 'Under construction'
