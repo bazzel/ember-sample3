@@ -5,8 +5,8 @@ App.Router.map ->
 
 App.ApplicationRoute = Em.Route.extend
   events:
-    openModal: (content) ->
-      @controllerFor('reveal').set('content', content)
+    openModal: (content, controller) ->
+      controller.set('content', content)
       $('#myModal').reveal()
 
 App.IndexRoute = Em.Route.extend
