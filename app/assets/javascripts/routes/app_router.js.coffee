@@ -7,7 +7,7 @@ App.ApplicationRoute = Em.Route.extend
   events:
     openModal: (content, controller) ->
       controller.set('content', content)
-      $('#myModal').reveal()
+      controller.set('reveal', true)
 
 App.IndexRoute = Em.Route.extend
   redirect: ->
