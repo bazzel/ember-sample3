@@ -23,13 +23,13 @@ App.PostsRoute = Em.Route.extend
 
 App.PostsNewRoute = Em.Route.extend
   model: ->
-    @transaction = @get('store').transaction()
-    @transaction.createRecord App.Post
+    transaction = @get('store').transaction()
+    transaction.createRecord App.Post
   setupController: (controller, model) ->
     controller.set('categories', App.Category.find())
 
   deactivate: ->
-    @transaction.rollback()
+    @currentModel.get('transaction').rollback()
 
 #App.Router = Em.Router.extend
   #enableLogging: true
