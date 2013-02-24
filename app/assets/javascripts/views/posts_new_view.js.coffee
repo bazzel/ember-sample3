@@ -1,2 +1,3 @@
 App.PostsNewView = Em.View.extend
-  tagName: 'form'
+  tagName: 'section'
+  classNames: ['panel']

@@ -6,6 +6,8 @@ App.Router.map ->
     , ->
       @route 'show',
         path: '/'
+      @route 'edit',
+        path: 'edit'
 
 App.ApplicationRoute = Em.Route.extend
   events:
@@ -28,6 +30,14 @@ App.PostsNewRoute = Em.Route.extend
   setupController: (controller, model) ->
     controller.set('categories', App.Category.find())
 
+  deactivate: ->
+    @currentModel.get('transaction').rollback()
+
+App.PostEditRoute = Em.Route.extend
+  model: ->
+    @modelFor 'post'
+  setupController: (controller, model) ->
+    controller.set('categories', App.Category.find())
   deactivate: ->
     @currentModel.get('transaction').rollback()
 
