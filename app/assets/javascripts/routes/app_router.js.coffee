@@ -46,7 +46,7 @@ App.PostEditRoute = Em.Route.extend
   setupController: (controller, model) ->
     controller.set('categories', App.Category.find())
   deactivate: ->
-    @currentModel.get('transaction').rollback()
+    @currentModel.get('transaction')?.rollback()
 
 #App.Router = Em.Router.extend
   #enableLogging: true
