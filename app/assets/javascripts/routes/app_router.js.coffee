@@ -14,6 +14,13 @@ App.ApplicationRoute = Em.Route.extend
     openModal: (content, controller) ->
       controller.set('content', content)
       controller.set('reveal', true)
+    deletePost: (model) ->
+      record = App.Post.find model.get('id')
+      if confirm("Are you sure you want to delete the post with title '#{record.get('title')}'?")
+        record.deleteRecord()
+        record.get('transaction').commit()
+        record.one 'didDelete', @, ->
+          @transitionTo('posts')
 
 App.IndexRoute = Em.Route.extend
   redirect: ->

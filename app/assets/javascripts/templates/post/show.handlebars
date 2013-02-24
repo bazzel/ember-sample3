@@ -10,7 +10,7 @@
 {{/if}}
 
 {{#linkTo post.edit class='secondary button'}}Edit{{/linkTo}}
-<a {{action deletePost}} class="alert button">Delete</a>
+<a {{action deletePost controllers.post.content}} class="alert button">Delete</a>
 
 {{outlet "navigation"}}
 {{outlet}}
