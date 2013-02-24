@@ -1,5 +1,5 @@
 App.PostsController = Ember.ArrayController.extend
-  itemController: ['post']
+  itemController: 'Post'
   postsCount: (->
     @get('content.length')
   ).property('content.@each')

@@ -1,0 +1,22 @@
+<label for="post_title" class="control-label">Title</label>
+{{view Em.TextField valueBinding="title" id="post_title" placeholder="Title"}}
+
+<label for="post_body" class="control-label">Body</label>
+{{view Em.TextArea valueBinding="body" id="post_body" class="Body"}}
+
+<label>
+  {{view Ember.Checkbox checkedBinding="published"}} Published
+</label>
+
+<label for="post_category" class="control-label">Category</label>
+{{view Em.TextField valueBinding="pictureNumber" type="number"}}
+{{view Em.Select
+  contentBinding="categories"
+  selectionBinding="category"
+  optionLabelPath="content.name"}}
+
+<button {{action create}} type="submit" class="button">Save</button>
+{{#unless isNew}}
+<button {{action deletePost content}} class="alert button">Delete</button>
+{{/unless}}
+{{#linkTo posts class='secondary button'}}Cancel{{/linkTo}}

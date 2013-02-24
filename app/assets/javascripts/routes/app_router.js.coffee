@@ -1,7 +1,11 @@
 App.Router.map ->
   @resource 'posts', ->
+    @route 'new',
     @resource 'post',
       path: '/:post_id'
+    , ->
+      @route 'show',
+        path: '/'
 
 App.ApplicationRoute = Em.Route.extend
   events:
@@ -16,6 +20,16 @@ App.IndexRoute = Em.Route.extend
 App.PostsRoute = Em.Route.extend
   model: ->
     App.Post.find()
+
+App.PostsNewRoute = Em.Route.extend
+  model: ->
+    @transaction = @get('store').transaction()
+    @transaction.createRecord App.Post
+  setupController: (controller, model) ->
+    controller.set('categories', App.Category.find())
+
+  deactivate: ->
+    @transaction.rollback()
 
 #App.Router = Em.Router.extend
   #enableLogging: true

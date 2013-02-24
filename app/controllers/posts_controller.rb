@@ -15,7 +15,7 @@ class PostsController < ApplicationController
   end
 
   def update
-    set_category_id(params)
+    #set_category_id(params)
     @post = Post.find(params[:id])
     @post.update_attributes(params[:post])
     respond_with @post
@@ -29,7 +29,9 @@ class PostsController < ApplicationController
   end
 
   def set_category_id(params)
-    params[:post][:category_id] = params[:post][:category][:id]
+    category_name = params[:post] && params[:post][:category] && params[:post][:category][:name]
+
+    params[:post][:category] = category_name && Category.find_by_name(category_name)
   end
 
 #

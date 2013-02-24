@@ -1,0 +1,18 @@
+<div class="panel">
+  {{#if controllers.post.isLoaded}}
+    {{#view App.AlertBoxView isPublishedBinding="controllers.post.published"}}
+      This post is {{#unless controllers.post.published}}not{{/unless}} published.
+    {{/view}}
+
+    <h4>{{controllers.post.title}}</h4>
+    <p class="truncate">{{controllers.post.body}}</p>
+  {{else}}
+    <p>Loading</p>
+  {{/if}}
+
+  <a {{action editPost content href=true}} class='secondary button'>Edit</a>
+  <a {{action deletePost}} class="alert button">Delete</a>
+
+  {{outlet "navigation"}}
+  {{outlet}}
+</div>

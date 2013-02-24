@@ -1,18 +1,1 @@
-<div class="panel">
-  {{#if isLoaded}}
-    {{#view App.AlertBoxView isPublishedBinding="published"}}
-      This post is {{#unless published}}not{{/unless}} published.
-    {{/view}}
-
-    <h4>{{title}}</h4>
-    <p class="truncate">{{body}}</p>
-  {{else}}
-    <p>Loading</p>
-  {{/if}}
-
-  <a {{action editPost content href=true}} class='secondary button'>Edit</a>
-  <a {{action deletePost}} class="alert button">Delete</a>
-
-  {{outlet "navigation"}}
-  {{outlet}}
-</div>
+{{outlet}}
