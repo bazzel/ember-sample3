@@ -19,5 +19,7 @@
 //= require jquery.condense
 //= require_self
 //= require app
-App = Em.Application.create();
+App = Em.Application.create({
+  LOG_TRANSITIONS: true
+});
 //= require_tree .
