@@ -1,4 +1,4 @@
-App.PostEditController = Em.ObjectController.extend
+App.PostsEditController = Em.ObjectController.extend
   update: ->
     #record = @content
     record = App.Post.find @get('id')

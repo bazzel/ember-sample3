@@ -41,4 +41,3 @@ gem 'jquery-rails'
 # gem 'debugger'
 
 gem "ember-rails", git: 'git://github.com/emberjs/ember-rails.git'
-gem "barber", :git => "git://github.com/darthdeus/barber.git", :branch => "update-handlebars-to-rc3"

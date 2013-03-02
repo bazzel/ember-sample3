@@ -1,10 +1,11 @@
 App.Router.map ->
   @resource 'posts', ->
     @route 'new',
+    @route 'edit',
+      path: '/post/:post_id/edit'
     @resource 'post',
       path: '/:post_id'
     , ->
-      @route 'edit'
       @resource 'comments'
       @resource 'trackbacks'
 
@@ -38,16 +39,11 @@ App.PostsNewRoute = Em.Route.extend
   deactivate: ->
     @currentModel.get('transaction').rollback()
 
-App.PostEditRoute = Em.Route.extend
-  model: ->
-    @modelFor 'post'
+App.PostsEditRoute = Em.Route.extend
   setupController: (controller, model) ->
     controller.set('categories', App.Category.find())
   deactivate: ->
     @currentModel.get('transaction')?.rollback()
-  renderTemplate: ->
-    @render
-      into: 'posts'
 
 App.CommentsRoute = Em.Route.extend
   setupController: (controller, model) ->

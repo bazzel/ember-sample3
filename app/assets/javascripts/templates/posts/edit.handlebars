@@ -17,6 +17,6 @@
 
 <button {{action update}} type="submit" class="button">Save</button>
 {{#unless isNew}}
-<button {{action deletePost}} class="alert button">Delete</button>
+<button {{action deletePost content}} class="alert button">Delete</button>
 {{/unless}}
-{{#linkTo post this class='secondary button'}}Cancel{{/linkTo}}
+{{#linkTo post content class='secondary button'}}Cancel{{/linkTo}}
