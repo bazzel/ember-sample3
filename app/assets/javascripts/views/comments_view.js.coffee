@@ -1,6 +1,6 @@
 App.CommentsView = Ember.View.extend
   templateName: 'comments'
-  className: 'ul'
+  tagName: 'ul'
   didInsertElement: ->
     @$('li').condense
       moreText: 'more &raquo;'

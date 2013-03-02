@@ -5,7 +5,7 @@
       {{#unless isNew}}
         <li>
           <div class="radius panel post">
-            {{#linkTo post.show this}}<img {{bindAttr src="imageUrl"}}/>{{/linkTo}}
+            {{#linkTo post this}}<img {{bindAttr src="imageUrl"}}/>{{/linkTo}}
             <a {{action openModal this controllers.reveal}} class="zoom-post secondary tiny button">Zoom</a>
             <a {{action deletePost this}} class="delete-post tiny button">Delete</a>
           <div>

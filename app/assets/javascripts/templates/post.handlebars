@@ -1,1 +1,23 @@
+{{#if isLoaded}}
+  {{#view App.AlertBoxView isPublishedBinding="published"}}
+    This post is {{#unless published}}not{{/unless}} published.
+  {{/view}}
+
+  <h4>{{title}}</h4>
+  <p class="truncate">{{body}}</p>
+{{else}}
+  <p>Loading</p>
+{{/if}}
+
+{{#linkTo post.edit class='secondary button'}}Edit{{/linkTo}}
+<a {{action deletePost content}} class="alert button">Delete</a>
+
+<dl class="tabs pill">
+  {{#linkTo comments tagName='dd'}}
+    <a {{bindAttr href="view.href"}}>Comments ({{comments.length}})</a>
+  {{/linkTo}}
+  {{#linkTo trackbacks tagName='dd'}}
+    <a {{bindAttr href="view.href"}}>Trackbacks ({{trackbacks.length}})</a>
+  {{/linkTo}}
+</dl>
 {{outlet}}

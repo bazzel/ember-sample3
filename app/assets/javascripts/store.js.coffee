@@ -1,5 +1,9 @@
-DS.Adapter.map 'App.Post',
+DS.RESTAdapter.map 'App.Post',
   category:
+    embedded: 'load'
+  comments:
+    embedded: 'load'
+  trackbacks:
     embedded: 'load'
 
 DS.RESTAdapter.configure('plurals',

@@ -3,8 +3,8 @@ App.PostEditController = Em.ObjectController.extend
     #record = @content
     record = App.Post.find @get('id')
     record.one 'didUpdate', @, ->
-      @get('target').transitionTo('post.show', record)
+      @get('target').transitionTo('post', record)
     if record.get('isDirty')
       record.get('transaction').commit()
     else
-      @get('target').transitionTo('post.show', record)
+      @get('target').transitionTo('post', record)

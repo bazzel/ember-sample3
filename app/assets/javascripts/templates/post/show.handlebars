@@ -12,5 +12,12 @@
 {{#linkTo post.edit class='secondary button'}}Edit{{/linkTo}}
 <a {{action deletePost controllers.post.content}} class="alert button">Delete</a>
 
-{{outlet "navigation"}}
+<dl class="tabs pill">
+  {{#linkTo comments tagName='dd'}}
+    <a {{bindAttr href="view.href"}}>Comments ({{controllers.post.comments.length}})</a>
+  {{/linkTo}}
+  {{#linkTo trackbacks tagName='dd'}}
+    <a {{bindAttr href="view.href"}}>Trackbacks ({{controllers.post.trackbacks.length}})</a>
+  {{/linkTo}}
+</dl>
 {{outlet}}

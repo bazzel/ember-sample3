@@ -3,8 +3,8 @@ App.Post = DS.Model.extend
   body: DS.attr('string')
   published: DS.attr('boolean')
   pictureNumber: DS.attr('number')
-  #comments: DS.hasMany('App.Comment')
-  #trackbacks: DS.hasMany('App.Trackback')
+  comments: DS.hasMany('App.Comment')
+  trackbacks: DS.hasMany('App.Trackback')
   category: DS.belongsTo('App.Category')
   categoryName: ( ->
     @get('category.name')

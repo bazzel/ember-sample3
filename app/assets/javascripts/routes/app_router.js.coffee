@@ -4,10 +4,9 @@ App.Router.map ->
     @resource 'post',
       path: '/:post_id'
     , ->
-      @route 'show',
-        path: '/'
-      @route 'edit',
-        path: 'edit'
+      @route 'edit'
+      @resource 'comments'
+      @resource 'trackbacks'
 
 App.ApplicationRoute = Em.Route.extend
   events:
@@ -47,6 +46,19 @@ App.PostEditRoute = Em.Route.extend
     controller.set('categories', App.Category.find())
   deactivate: ->
     @currentModel.get('transaction')?.rollback()
+  renderTemplate: ->
+    @render
+      into: 'posts'
+
+App.CommentsRoute = Em.Route.extend
+  setupController: (controller, model) ->
+    comments = @controllerFor('post').get('comments')
+    controller.set('content', comments)
+
+App.TrackbacksRoute = Em.Route.extend
+  setupController: (controller, model) ->
+    trackbacks = @controllerFor('post').get('trackbacks')
+    controller.set('content', trackbacks)
 
 #App.Router = Em.Router.extend
   #enableLogging: true
