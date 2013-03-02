@@ -8,3 +8,4 @@ App.PostEditController = Em.ObjectController.extend
       record.get('transaction').commit()
     else
       @get('target').transitionTo('post', record)
+

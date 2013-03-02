@@ -5,4 +5,3 @@ App.CommentsView = Ember.View.extend
     @$('li').condense
       moreText: 'more &raquo;'
       lessText: '&laquo; less'
-      # ellipsis: null
